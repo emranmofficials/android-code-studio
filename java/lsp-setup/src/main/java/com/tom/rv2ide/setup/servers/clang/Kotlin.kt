@@ -34,7 +34,8 @@ class Kotlin(private val context: Context) : ILanguageServerInstaller {
   
   companion object {
     private const val SERVER_ID = "Kotlin"
-    private const val MANIFEST_URL = "https://raw.githubusercontent.com/AndroidCSOfficial/acs-language-servers/refs/heads/main/servers-manifest.json"
+    // Vendored copy of acs-language-servers/servers-manifest.json, see acs/sync-manifests.sh.
+    private const val MANIFEST_URL = "https://raw.githubusercontent.com/emranmofficials/android-code-studio/refs/heads/dev/acs/manifests/servers-manifest.json"
   }
   
   override fun isInstalled(): Boolean {

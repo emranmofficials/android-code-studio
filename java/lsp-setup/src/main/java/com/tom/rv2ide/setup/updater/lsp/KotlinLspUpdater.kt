@@ -58,7 +58,8 @@ import java.util.zip.ZipInputStream
  */
 class KotlinLspUpdater(private val context: Context) {
 
-    private val manifestUrl = "https://raw.githubusercontent.com/AndroidCSOfficial/acs-language-servers/refs/heads/main/servers-manifest.json"
+    // Vendored copy of acs-language-servers/servers-manifest.json, see acs/sync-manifests.sh.
+    private val manifestUrl = "https://raw.githubusercontent.com/emranmofficials/android-code-studio/refs/heads/dev/acs/manifests/servers-manifest.json"
 
     /**
      * Checks for available updates by fetching the remote manifest and comparing versions.

@@ -381,8 +381,20 @@ object AcsProvider {
   const val ACS_BUILD_SYSTEM_REPONAME = "acs-build-system"
   const val ACS_BUILD_SYSTEM_REPOURL = "https://$REPO_HOST/$REPO_OWNER/$ACS_BUILD_SYSTEM_REPONAME"
 
+  /**
+   * The manifests are vendored in this repository under `acs/manifests/` so that this app does not
+   * depend on AndroidCSOfficial's repositories at runtime. Keep these constants in sync with
+   * `acs/sync-manifests.sh`. Release asset URLs inside the manifests still point at the upstream
+   * repositories until the binaries are re-hosted.
+   */
+  const val MANIFESTS_REPO_OWNER = "emranmofficials"
+  const val MANIFESTS_REPO_NAME = "android-code-studio"
+  const val MANIFESTS_REPO_REF = "dev"
+  const val MANIFESTS_BASE_URL =
+      "https://raw.githubusercontent.com/$MANIFESTS_REPO_OWNER/$MANIFESTS_REPO_NAME/refs/heads/$MANIFESTS_REPO_REF/acs/manifests"
+
   /** Manifest url getter function */
-  val getManifestUrl: String = "${ACS_BUILD_SYSTEM_REPOURL}/raw/refs/heads/main/acs-manifest.json"
+  val getManifestUrl: String = "$MANIFESTS_BASE_URL/acs-manifest.json"
 
   /** Enhanced ACS runner with proper command interface */
   fun acsRunner(

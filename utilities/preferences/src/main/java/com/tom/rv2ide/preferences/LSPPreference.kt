@@ -409,8 +409,9 @@ abstract class LSPPreference(
   }
 
   // TODO: allow the user to change repo url
+  // Vendored copy of acs-language-servers/servers-manifest.json, see acs/sync-manifests.sh.
   private fun manifestUrl(): String =
-      "https://raw.githubusercontent.com/AndroidCSOfficial/acs-language-servers/refs/heads/main/servers-manifest.json"
+      "https://raw.githubusercontent.com/emranmofficials/android-code-studio/refs/heads/dev/acs/manifests/servers-manifest.json"
 
   private fun showToast(context: android.content.Context, message: String) {
     android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
