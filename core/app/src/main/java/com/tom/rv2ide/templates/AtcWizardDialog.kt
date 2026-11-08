@@ -325,7 +325,7 @@ class AtcWizardDialog : BottomSheetDialogFragment() {
   private fun requireAcsHomeProjectsDir() {
     showAlert(
         "Invalid Save Location",
-        "Game projects must be saved in the Android Code Studio home directory to work correctly.",
+        "Game projects must be saved in the AI Dev Studio home directory to work correctly.",
         "Automatically switch",
     ) {
       binding.saveLocationInput.setText(Environment.AT_ACSHOME_PROJECTS.toString())

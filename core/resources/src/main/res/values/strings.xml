@@ -87,7 +87,7 @@
   <string name="ai_agent_grok_api_key">Grok API Key</string>
 
   <string name="no_acs_title">ACS Components Missing</string>
-  <string name="no_acs_summary">This application appears to be incomplete or unofficial, as it is missing the required ACS build system. For full functionality, please install the official Android Code Studio from a trusted source.</string>
+  <string name="no_acs_summary">This application appears to be incomplete or unofficial, as it is missing the required ACS build system. For full functionality, please install the official AI Dev Studio from a trusted source.</string>
 
   <string name="no_internet">No internet connection</string>
   <string name="btn_proceed_str">Proceed</string>
@@ -102,7 +102,7 @@
   <string name="text_to_search">Text to search</string>
   <string
     name="app_name"
-    translatable="false">Android Code Studio</string>
+    translatable="false">AI Dev Studio</string>
   <string
     name="app_name_dcm"
     translatable="false">Rv2IDE</string>
@@ -110,11 +110,11 @@
   <string name="about_option_website">Website</string>
   <string
     name="about_footer_alternate"
-    translatable="false">Android Code Studio v\u2022 %s</string>
-  <string name="about_footer">Android Code Studio%1$s for %2$s</string>
+    translatable="false">AI Dev Studio v\u2022 %s</string>
+  <string name="about_footer">AI Dev Studio%1$s for %2$s</string>
   <string name="about_subtitle">Simply, an IDE for Android</string>
   <string name="msg_get_package_failed">Failed to extract package name!</string>
-  <string name="msg_need_help">If you\'re facing issues while using Android Code Studio or with building Android Apps, you can join the Telegram Group ask for help there.\n\nYou can also send suggesstions on our email.</string>
+  <string name="msg_need_help">If you\'re facing issues while using AI Dev Studio or with building Android Apps, you can join the Telegram Group ask for help there.\n\nYou can also send suggesstions on our email.</string>
   <string
     name="title_github"
     translatable="false">GitHub</string>
@@ -157,7 +157,7 @@
 
   <!-- Project Builder -->
   <string name="title_unsupported_device">Device Not Supported</string>
-  <string name="msg_unsupported_device">You are using %1$s variant of Android Code Studio on a %2$s-only device. This configuration is not supported. Please install the %2$s variant of Android Code Studio.</string>
+  <string name="msg_unsupported_device">You are using %1$s variant of AI Dev Studio on a %2$s-only device. This configuration is not supported. Please install the %2$s variant of AI Dev Studio.</string>
   <string name="title_clear_output">Clear output</string>
   <string name="build_output">Build output</string>
   <string name="quick_run_debug">Quick run</string>
@@ -172,7 +172,7 @@
 
   <!-- Project -->
   <string name="title_first_build">First Build</string>
-  <string name="msg_first_build">This is the first time build after you installed Android Code Studio. First build usually takes time as Gradle downloads all dependencies and plugins. This process may take about 10–15 minutes. But this totally depends on your network connection.\n\nPlease be patient …</string>
+  <string name="msg_first_build">This is the first time build after you installed AI Dev Studio. First build usually takes time as Gradle downloads all dependencies and plugins. This process may take about 10–15 minutes. But this totally depends on your network connection.\n\nPlease be patient …</string>
   <string name="create_project">Create project</string>
   <string name="minimum_sdk">Minimum SDK</string>
   <string name="new_project">New project</string>
@@ -339,7 +339,7 @@
 
   <!-- Preferences -->
   <string name="title_change_text_size">Editor font size</string>
-  <string name="idepref_about_title">About Android Code Studio</string>
+  <string name="idepref_about_title">About AI Dev Studio</string>
   <string name="idepref_build_clearCache_title">Clear Gradle caches</string>
   <string name="idepref_build_clearCache_summary">Clear Gradle caches directory. This will delete all dependencies downloaded by Gradle. Required files will be downloaded again in next build.</string>
   <string name="idepref_build_customgradlecommands_title">Additional Gradle commands</string>
@@ -383,7 +383,7 @@
   <string name="msg_generate_xml_failed">Failed to generate XML code</string>
   <string name="title_generating_xml">Generating XML code</string>
   <string name="msg_swipe_up">Swipe up or click for build output, logs and more.</string>
-  <string name="msg_ide_crashed">Android Code Studio crashed</string>
+  <string name="msg_ide_crashed">AI Dev Studio crashed</string>
   <string name="msg_report_crash">Please open an issue on github with the following stacktrace :</string>
   <string name="msg_crash_report_hint">Click on the button below to copy log and open issues page.</string>
   <string name="msg_copy_report_action">Copy and report</string>
@@ -480,7 +480,7 @@
   <string name="idepref_channel_summary">Subscribe for latest updates.</string>
   <string name="idepref_group_summary">Discuss featues, bugs and improvements here.</string>
   <string name="idepref_changelog_summary">What\'s new in this version?</string>
-  <string name="idepref_about_summary">More about Android Code Studio.</string>
+  <string name="idepref_about_summary">More about AI Dev Studio.</string>
   <string name="idepref_general_summary">General IDE configuration.</string>
   <string name="idepref_editor_summary">Configure the editor.</string>
   <string
@@ -588,7 +588,7 @@
   <string name="lsp_server_error_title">Download Failed</string>
   <string name="lsp_server_success_title">Download Complete</string>
 
-  <string name="title_gradle_service_notification_channel">Android Code Studio Gradle build service</string>
+  <string name="title_gradle_service_notification_channel">AI Dev Studio Gradle build service</string>
   <string name="msg_hex_color_code">Hex color code</string>
   <string name="msg_color_picker_pick">Pick</string>
   <string name="msg_chmod_exec">Setting executable permissions…</string>
@@ -836,7 +836,7 @@
   <string name="uiMode_dark">Dark</string>
   <string name="uiMode_system">Follow system</string>
   <string name="idepref_general_themeSelector_title">Theme</string>
-  <string name="idepref_general_themeSelector_summary">Select a theme for Android Code Studio (requires restart).</string>
+  <string name="idepref_general_themeSelector_summary">Select a theme for AI Dev Studio (requires restart).</string>
   <string name="idepref_general_projectConfig">Project configuration</string>
   <string name="msg_app_launch_failed">Launch failed. Install the application first.</string>
   <string name="idepref_java_diagnosticEnabled_title">Diagnostics enabled</string>
@@ -878,7 +878,7 @@
 <b>🚨 Important Notice</b>
   <br>
     <br>
-This AI agent is designed to assist you in developing Android applications directly within the Android Code Studio environment. While it strives for accuracy, please be aware that AI can sometimes generate code with errors, suggest outdated practices, or misinterpret complex requirements.<br>
+This AI agent is designed to assist you in developing Android applications directly within the AI Dev Studio environment. While it strives for accuracy, please be aware that AI can sometimes generate code with errors, suggest outdated practices, or misinterpret complex requirements.<br>
         <br>
 
           <b>✅ To get the best results, please follow these guidelines:</b>
@@ -902,7 +902,7 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="cancel_action">Cancel</string>
 
   <string name="permlab_bind_logger_service">bind to log service</string>
-  <string name="permdesc_bind_logger_service">Allows this application to bind to Android Code Studio\'s logging service. This permission is required for Android Code Studio to read logs of this application.</string>
+  <string name="permdesc_bind_logger_service">Allows this application to bind to AI Dev Studio\'s logging service. This permission is required for AI Dev Studio to read logs of this application.</string>
   <string name="wizard_module_name">Module name</string>
   <string name="wizard_module_type">Module type</string>
   <string name="msg_invalid_module_name">Invalid Gradle module name</string>
@@ -917,7 +917,7 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="msg_use_ndk">Add C++ template for this project</string>
   <string name="title_privacy">Privacy</string>
   <string name="title_androidide_statistics">ACS Statistics</string>
-  <string name="msg_androidide_statistics">Help me improve Android Code Studio by providing anonymous statistics. I collect basic information about your device for user base statistics only. The exact data that is shared can be viewed in preferences. Your data is secure and not shared with third-party services. You can opt-out anytime in preferences.</string>
+  <string name="msg_androidide_statistics">Help me improve AI Dev Studio by providing anonymous statistics. I collect basic information about your device for user base statistics only. The exact data that is shared can be viewed in preferences. Your data is secure and not shared with third-party services. You can opt-out anytime in preferences.</string>
   <string name="summary_anonymous_usage_stats">Anonymous usage stats</string>
   <string name="idepref_stats_optIn_title">Stats collection</string>
   <string name="idepref_stats_optIn_summary">Allow installation metrics and device statistics to be collected (fully anonymous).</string>
@@ -960,7 +960,7 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="title_launch_app">Launch app</string>
   <string name="title_ide_configurations">IDE Configurations</string>
   <string name="title_experiment_flavor">Experimental</string>
-  <string name="msg_experimental_flavor">You are using %1$s variant of Android Code Studio on a %2$s device. This configuration may work, but it\'ll result in reduced performance and possible security vulnerabilities. Please avoid using this configuration whenever possible.</string>
+  <string name="msg_experimental_flavor">You are using %1$s variant of AI Dev Studio on a %2$s device. This configuration may work, but it\'ll result in reduced performance and possible security vulnerabilities. Please avoid using this configuration whenever possible.</string>
   <string name="idepref_editor_pinLineNumbers_title">Pin line numbers</string>
   <string name="idepref_editor_pinLineNumbers_summary">Whether the editor should pin line number panel when scrolled horizontally.</string>
   <string name="theme_blue_wave">Blue Wave</string>
@@ -984,7 +984,7 @@ This AI agent is designed to assist you in developing Android applications direc
   <string name="title_grant">Grant</string>
   <string name="permission_title_storage">Storage</string>
   <string name="permission_desc_storage">Required to access project files.</string>
-  <string name="permission_desc_install_packages">Allow installing APKs built with Android Code Studio.</string>
+  <string name="permission_desc_install_packages">Allow installing APKs built with AI Dev Studio.</string>
   <string name="permission_title_install_packages">Install packages</string>
   <string name="onboarding_title_permissions">Permissions</string>
   <string name="onboarding_subtitle_permissions">AndroidCS requires the following permissions</string>
