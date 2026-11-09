@@ -26,6 +26,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tom.rv2ide.R
 import com.tom.rv2ide.adapters.AgentStepAdapter
+import com.tom.rv2ide.artificial.dialogs.OpenAIAgentConfigDialog
 import com.tom.rv2ide.databinding.FragmentAgentBinding
 import com.tom.rv2ide.viewmodel.AgentViewModel
 
@@ -79,6 +80,10 @@ class AgentFragment : Fragment() {
       viewModel.undoLast()
     }
 
+    binding.btnOpenAISettings.setOnClickListener {
+      OpenAIAgentConfigDialog().show(parentFragmentManager, "OpenAIAgentConfigDialog")
+    }
+
     viewModel.steps.observe(viewLifecycleOwner) { steps ->
       adapter.submitList(steps) {
         if (steps.isNotEmpty()) {
@@ -93,6 +98,7 @@ class AgentFragment : Fragment() {
       binding.btnSend.isEnabled = !running
       binding.btnClear.isEnabled = !running
       binding.btnUndo.isEnabled = !running
+      binding.btnOpenAISettings.isEnabled = !running
     }
 
     viewModel.status.observe(viewLifecycleOwner) { status ->

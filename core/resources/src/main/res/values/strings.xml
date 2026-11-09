@@ -113,6 +113,29 @@
   <string name="agent_running_wait">Please wait for the current agent run to finish</string>
   <string name="agent_diff_title">%1$s changed</string>
 
+  <!-- AI agent: OpenAI / OpenAI-compatible connection settings -->
+  <string name="agent_openai_title">OpenAI agent</string>
+  <string name="agent_openai_summary">Works with the official OpenAI API and any OpenAI-compatible endpoint (Ollama, LM Studio, OpenRouter, …). Saving makes OpenAI the active AI provider.</string>
+  <string name="agent_openai_base_url">Base URL</string>
+  <string name="agent_openai_base_url_help">For example https://api.openai.com/v1</string>
+  <string name="agent_openai_api_key">API key</string>
+  <string name="agent_openai_model">Model</string>
+  <string name="agent_openai_fetch_models">Models</string>
+  <string name="agent_openai_fetching">Loading…</string>
+  <string name="agent_openai_stream">Stream answers</string>
+  <string name="agent_openai_stream_help">Shows the model\'s thinking while it writes the next action.</string>
+  <string name="agent_openai_save">Save</string>
+  <string name="agent_openai_cancel">Cancel</string>
+  <string name="agent_openai_saved">OpenAI agent saved (%1$s)</string>
+  <string name="agent_openai_models_failed">Could not load models: %1$s</string>
+  <string name="agent_openai_models_empty">This endpoint did not return any models</string>
+  <string name="agent_openai_need_connection">Enter a model and an API key first</string>
+  <string name="agent_openai_base_url_required">Base URL is required</string>
+  <string name="agent_openai_model_required">Model is required</string>
+  <string name="agent_openai_api_key_required">The official OpenAI endpoint needs an API key</string>
+  <string name="agent_status_thinking">💭 %1$s</string>
+  <string name="agent_status_writing">✍️ Writing the next action…</string>
+
   <string name="no_acs_title">ACS Components Missing</string>
   <string name="no_acs_summary">This application appears to be incomplete or unofficial, as it is missing the required ACS build system. For full functionality, please install the official AI Dev Studio from a trusted source.</string>
 

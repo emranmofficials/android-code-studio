@@ -95,6 +95,29 @@
   <string name="agent_running_wait">请等待当前代理运行结束</string>
   <string name="agent_diff_title">%1$s 已更改</string>
 
+  <!-- AI agent: OpenAI / OpenAI-compatible connection settings -->
+  <string name="agent_openai_title">OpenAI 代理</string>
+  <string name="agent_openai_summary">支持官方 OpenAI API 以及任何 OpenAI 兼容端点（Ollama、LM Studio、OpenRouter 等）。保存后将 OpenAI 设为当前 AI 提供方。</string>
+  <string name="agent_openai_base_url">基础 URL</string>
+  <string name="agent_openai_base_url_help">例如 https://api.openai.com/v1</string>
+  <string name="agent_openai_api_key">API 密钥</string>
+  <string name="agent_openai_model">模型</string>
+  <string name="agent_openai_fetch_models">模型列表</string>
+  <string name="agent_openai_fetching">加载中…</string>
+  <string name="agent_openai_stream">流式回答</string>
+  <string name="agent_openai_stream_help">在模型编写下一步操作时显示其思考过程。</string>
+  <string name="agent_openai_save">保存</string>
+  <string name="agent_openai_cancel">取消</string>
+  <string name="agent_openai_saved">OpenAI 代理已保存（%1$s）</string>
+  <string name="agent_openai_models_failed">无法加载模型：%1$s</string>
+  <string name="agent_openai_models_empty">该端点未返回任何模型</string>
+  <string name="agent_openai_need_connection">请先填写模型和 API 密钥</string>
+  <string name="agent_openai_base_url_required">基础 URL 不能为空</string>
+  <string name="agent_openai_model_required">模型不能为空</string>
+  <string name="agent_openai_api_key_required">官方 OpenAI 端点需要 API 密钥</string>
+  <string name="agent_status_thinking">💭 %1$s</string>
+  <string name="agent_status_writing">✍️ 正在编写下一步操作…</string>
+
   <!-- AI Agent Deepseek -->
   <string name="ai_agent_deepseek_api_key">Deepseek API 密钥</string>
   <string name="ai_agent_deepseek_api_key_summary">输入您的 OpenAI API 密钥以使用 AI 功能</string>
