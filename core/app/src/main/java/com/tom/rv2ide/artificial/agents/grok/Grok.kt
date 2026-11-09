@@ -20,6 +20,7 @@ package com.tom.rv2ide.artificial.agents.grok
 import android.content.Context
 import com.tom.rv2ide.artificial.agents.AIAgent
 import com.tom.rv2ide.artificial.agents.AIAgentRegistry
+import com.tom.rv2ide.artificial.agentloop.AgentMessage
 import com.tom.rv2ide.artificial.agents.ModificationAttempt
 import com.tom.rv2ide.artificial.agents.Agents
 import com.tom.rv2ide.artificial.rules.WritingRules
@@ -91,6 +92,37 @@ class Grok : AIAgent {
   override fun reinitializeWithNewModel(apiKey: String, context: Context) {
     initialize(apiKey, context)
   }
+
+  /**
+   * Raw chat used by the agent loop. The [WritingRules] system prompt is skipped because the
+   * loop supplies its own strict JSON action protocol.
+   */
+  override suspend fun chat(
+      messages: List<AgentMessage>,
+      injectFiles: Boolean,
+  ): Result<String> =
+      withContext(Dispatchers.IO) {
+        val key =
+            apiKey
+                ?: return@withContext Result.failure(
+                    IllegalStateException("Grok service not initialized"))
+        try {
+          val prompt =
+              messages.joinToString(separator = "\n\n") { message ->
+                "${message.role.uppercase()}: ${message.content}"
+              }
+          val response = callGrokAPI(key, prompt, systemPrompt = null)
+          if (response.isBlank()) {
+            Result.failure(Exception("Empty response from AI"))
+          } else {
+            Result.success(response)
+          }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Result.failure(e)
+        }
+      }
 
   override fun setContext(context: Context) {
     fileWriter = AIFileWriter(context)
@@ -258,7 +290,11 @@ class Grok : AIAgent {
         }
       }
 
-  private fun callGrokAPI(apiKey: String, prompt: String): String {
+  private fun callGrokAPI(
+      apiKey: String,
+      prompt: String,
+      systemPrompt: String? = writingRules.useThis(),
+  ): String {
     android.util.Log.d("Grok", "Starting API call to Grok")
     
     val url = URL("https://api.x.ai/v1/chat/completions")
@@ -273,11 +309,13 @@ class Grok : AIAgent {
       connection.readTimeout = 30000
       
       val messages = JSONArray()
-      
-      val systemMessage = JSONObject()
-      systemMessage.put("role", "system")
-      systemMessage.put("content", writingRules.useThis())
-      messages.put(systemMessage)
+
+      if (systemPrompt != null) {
+        val systemMessage = JSONObject()
+        systemMessage.put("role", "system")
+        systemMessage.put("content", systemPrompt)
+        messages.put(systemMessage)
+      }
       
       val userMessage = JSONObject()
       userMessage.put("role", "user")

@@ -56,8 +56,13 @@ class AIAgentManager(private val context: Context) {
         
         permissionManager.setFileWriteEnabled(true)
         permissionManager.setRequireConfirmation(false)
-        
-        setProvider(currentProviderId)
+
+        // Restore the provider the user picked in the AI settings. Fall back to Gemini when the
+        // saved provider has no valid API key (or nothing has been saved yet).
+        val savedProvider = Agents(context).getProvider()
+        if (!setProvider(savedProvider)) {
+            setProvider(currentProviderId)
+        }
     }
     
     fun getCurrentAgent(): AIAgent? = currentAgent

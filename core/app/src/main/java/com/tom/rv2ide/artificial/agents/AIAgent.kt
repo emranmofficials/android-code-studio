@@ -18,6 +18,7 @@
 package com.tom.rv2ide.artificial.agents
 
 import android.content.Context
+import com.tom.rv2ide.artificial.agentloop.AgentMessage
 import com.tom.rv2ide.artificial.project.awareness.ProjectTreeResult
 import com.tom.rv2ide.artificial.file.FileWriteResult
 
@@ -41,6 +42,26 @@ interface AIAgent {
         language: String,
         projectStructure: String?
     ): Result<String>
+
+    /**
+     * Sends a list of conversation messages to the provider and returns the raw response.
+     *
+     * The default implementation flattens the messages into a single prompt and delegates to
+     * [generateCode]. Providers which attach the whole project's file contents in
+     * [generateCode] should honour [injectFiles] = `false` and skip that injection, because the
+     * agent loop sends its own, much smaller, context. The loop uses an agent instance which was
+     * never given project data, so the default implementation is safe as well.
+     */
+    suspend fun chat(
+        messages: List<AgentMessage>,
+        injectFiles: Boolean = false,
+    ): Result<String> {
+      val prompt =
+          messages.joinToString(separator = "\n\n") { message ->
+            "${message.role.uppercase()}: ${message.content}"
+          }
+      return generateCode(prompt = prompt, context = null, language = "text", projectStructure = null)
+    }
     
     fun recordModification(filePath: String, oldContent: String?, newContent: String, success: Boolean)
     fun undoLastModification(): Boolean

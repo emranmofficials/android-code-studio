@@ -20,6 +20,7 @@ package com.tom.rv2ide.artificial.agents.local
 import android.content.Context
 import com.tom.rv2ide.artificial.agents.AIAgent
 import com.tom.rv2ide.artificial.agents.AIAgentRegistry
+import com.tom.rv2ide.artificial.agentloop.AgentMessage
 import com.tom.rv2ide.artificial.agents.ModificationAttempt
 import com.tom.rv2ide.artificial.agents.Agents
 import com.tom.rv2ide.artificial.secrets.ApiKey
@@ -104,6 +105,68 @@ class LocalLLM : AIAgent {
 
   override fun reinitializeWithNewModel(apiKey: String, context: Context) {
     initialize(apiKey, context)
+  }
+
+  /**
+   * Raw chat used by the agent loop. The [WritingRules] system prompt is skipped because the
+   * loop supplies its own strict JSON action protocol.
+   */
+  override suspend fun chat(
+      messages: List<AgentMessage>,
+      injectFiles: Boolean,
+  ): Result<String> =
+      withContext(Dispatchers.IO) {
+        try {
+          val prompt =
+              messages.joinToString(separator = "\n\n") { message ->
+                "${message.role.uppercase()}: ${message.content}"
+              }
+          val response = callLocalLLM(prompt)
+          if (response.isBlank()) {
+            Result.failure(Exception("Empty response from Local LLM"))
+          } else {
+            Result.success(response)
+          }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Result.failure(e)
+        }
+      }
+
+  private fun callLocalLLM(prompt: String): String {
+    val url = baseUrl ?: throw IllegalStateException("Local LLM not configured")
+    val model = modelName ?: throw IllegalStateException("Local LLM not configured")
+
+    val messages = JSONArray()
+    messages.put(JSONObject().apply {
+      put("role", "user")
+      put("content", prompt)
+    })
+
+    val requestBody = JSONObject().apply {
+      put("model", model)
+      put("messages", messages)
+      put("temperature", 0.7)
+      put("stream", false)
+    }
+
+    val request = Request.Builder()
+        .url("$url/v1/chat/completions")
+        .post(requestBody.toString().toRequestBody("application/json".toMediaType()))
+        .build()
+
+    httpClient.newCall(request).execute().use { response ->
+      if (!response.isSuccessful) {
+        throw Exception("Local LLM error ${response.code}: ${response.body?.string() ?: "Unknown error"}")
+      }
+      val responseBody = response.body?.string() ?: ""
+      return JSONObject(responseBody)
+          .getJSONArray("choices")
+          .getJSONObject(0)
+          .getJSONObject("message")
+          .getString("content")
+    }
   }
 
   override fun setContext(context: Context) {

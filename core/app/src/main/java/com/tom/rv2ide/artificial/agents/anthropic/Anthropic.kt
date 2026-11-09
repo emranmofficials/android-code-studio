@@ -20,6 +20,7 @@ package com.tom.rv2ide.artificial.agents.anthropic
 import android.content.Context
 import com.tom.rv2ide.artificial.agents.AIAgent
 import com.tom.rv2ide.artificial.agents.AIAgentRegistry
+import com.tom.rv2ide.artificial.agentloop.AgentMessage
 import com.tom.rv2ide.artificial.agents.ModificationAttempt
 import com.tom.rv2ide.artificial.agents.Agents
 import com.tom.rv2ide.artificial.rules.WritingRules
@@ -95,6 +96,37 @@ class Anthropic : AIAgent {
   override fun reinitializeWithNewModel(apiKey: String, context: Context) {
     initialize(apiKey, context)
   }
+
+  /**
+   * Raw chat used by the agent loop. The [WritingRules] system prompt is skipped because the
+   * loop supplies its own strict JSON action protocol.
+   */
+  override suspend fun chat(
+      messages: List<AgentMessage>,
+      injectFiles: Boolean,
+  ): Result<String> =
+      withContext(Dispatchers.IO) {
+        val key =
+            apiKey
+                ?: return@withContext Result.failure(
+                    IllegalStateException("Anthropic service not initialized"))
+        try {
+          val prompt =
+              messages.joinToString(separator = "\n\n") { message ->
+                "${message.role.uppercase()}: ${message.content}"
+              }
+          val response = callAnthropicAPI(key, prompt, systemPrompt = null)
+          if (response.isBlank()) {
+            Result.failure(Exception("Empty response from AI"))
+          } else {
+            Result.success(response)
+          }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Result.failure(e)
+        }
+      }
 
   override fun setContext(context: Context) {
     fileWriter = AIFileWriter(context)
@@ -262,7 +294,11 @@ class Anthropic : AIAgent {
         }
       }
 
-  private fun callAnthropicAPI(apiKey: String, prompt: String): String {
+  private fun callAnthropicAPI(
+      apiKey: String,
+      prompt: String,
+      systemPrompt: String? = writingRules.useThis(),
+  ): String {
     android.util.Log.d("Anthropic", "Starting API call to Anthropic")
     
     val url = URL("https://api.anthropic.com/v1/messages")
@@ -286,7 +322,9 @@ class Anthropic : AIAgent {
       val requestBody = JSONObject()
       requestBody.put("model", selectedModel)
       requestBody.put("max_tokens", 4096)
-      requestBody.put("system", writingRules.useThis())
+      if (systemPrompt != null) {
+        requestBody.put("system", systemPrompt)
+      }
       requestBody.put("messages", messages)
       
       android.util.Log.d("Anthropic", "Request body: ${requestBody.toString()}")

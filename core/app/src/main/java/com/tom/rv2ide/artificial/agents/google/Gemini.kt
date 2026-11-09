@@ -22,6 +22,7 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.tom.rv2ide.artificial.agents.AIAgent
 import com.tom.rv2ide.artificial.agents.AIAgentRegistry
+import com.tom.rv2ide.artificial.agentloop.AgentMessage
 import com.tom.rv2ide.artificial.agents.ModificationAttempt
 import com.tom.rv2ide.artificial.secrets.ApiKey
 import com.tom.rv2ide.artificial.services.ArtificialService
@@ -41,6 +42,9 @@ import com.tom.rv2ide.artificial.agents.Agents
 class Gemini : AIAgent {
 
   private var generativeModel: GenerativeModel? = null
+  private var rawGenerativeModel: GenerativeModel? = null
+  private var apiKey: String? = null
+  private var selectedModelName: String = "gemini-2.5-pro"
   private val writingRules = WritingRules.Instructions()
   private var projectTreeResult: ProjectTreeResult? = null
   private var fileWriter: AIFileWriter? = null
@@ -91,6 +95,9 @@ class Gemini : AIAgent {
               apiKey = apiKey,
               systemInstruction = content { text(writingRules.useThis()) }
           )
+          this.apiKey = apiKey
+          this.selectedModelName = selectedModel
+          this.rawGenerativeModel = null
       } catch (e: Exception) {
           throw e
       }
@@ -99,6 +106,43 @@ class Gemini : AIAgent {
   override fun reinitializeWithNewModel(apiKey: String, context: Context) {
     initialize(apiKey, context)
   }
+
+  /**
+   * Raw chat used by the agent loop. It deliberately uses a model without the [WritingRules]
+   * system instruction, because the loop sends its own strict JSON action protocol and the two
+   * instruction sets conflict.
+   */
+  override suspend fun chat(
+      messages: List<AgentMessage>,
+      injectFiles: Boolean,
+  ): Result<String> =
+      withContext(Dispatchers.IO) {
+        try {
+          val key =
+              apiKey
+                  ?: return@withContext Result.failure(
+                      IllegalStateException("Gemini AI service not initialized"))
+          val model =
+              rawGenerativeModel
+                  ?: GenerativeModel(modelName = selectedModelName, apiKey = key).also {
+                    rawGenerativeModel = it
+                  }
+          val prompt =
+              messages.joinToString(separator = "\n\n") { message ->
+                "${message.role.uppercase()}: ${message.content}"
+              }
+          val text = model.generateContent(content { text(prompt) }).text ?: ""
+          if (text.isBlank()) {
+            Result.failure(Exception("Empty response from AI"))
+          } else {
+            Result.success(text)
+          }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Result.failure(e)
+        }
+      }
 
   override fun setContext(context: Context) {
     fileWriter = AIFileWriter(context)
