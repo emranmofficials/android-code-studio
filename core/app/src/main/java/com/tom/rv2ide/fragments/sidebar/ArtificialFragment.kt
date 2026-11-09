@@ -107,7 +107,8 @@ class ArtificialFragment(
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when (position) {
                 0 -> "Chat"
-                1 -> "History"
+                1 -> getString(R.string.agent_tab_title)
+                2 -> "History"
                 else -> ""
             }
         }.attach()
