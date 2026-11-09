@@ -65,6 +65,7 @@ import java.io.InputStream
 import java.util.Objects
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -98,6 +99,14 @@ class GradleBuildService :
   private var notificationManager: NotificationManager? = null
   private var server: IToolingApiServer? = null
   private var eventListener: EventListener? = null
+
+  /**
+   * Listeners which receive the raw build output lines. Unlike [eventListener], any number of
+   * listeners can be registered at the same time and they are not wrapped for the UI thread, so
+   * they must be fast and thread safe. Used by the in-app agent to observe a build it started.
+   */
+  private val outputListeners = CopyOnWriteArrayList<(String) -> Unit>()
+
   private var isReleaseVariant = false
 
   private val buildServiceScope =
@@ -350,6 +359,13 @@ class GradleBuildService :
 
   override fun logOutput(line: String) {
     eventListener?.onOutput(line)
+    outputListeners.forEach { listener ->
+      try {
+        listener(line)
+      } catch (e: Exception) {
+        log.error("Failed to dispatch build output to a listener", e)
+      }
+    }
   }
 
   override fun prepareBuild(buildInfo: BuildInfo) {
@@ -561,6 +577,16 @@ class GradleBuildService :
     }
     this.eventListener = wrap(eventListener)
     return this
+  }
+
+  /**
+   * Registers a listener which is called for every line of the raw build output. The returned
+   * [AutoCloseable] must be closed to unregister the listener (for example when the build that
+   * registered it finishes), otherwise it will keep receiving output of later builds.
+   */
+  fun addOutputListener(listener: (String) -> Unit): AutoCloseable {
+    outputListeners += listener
+    return AutoCloseable { outputListeners -= listener }
   }
 
   private fun wrap(listener: EventListener?): EventListener? {
