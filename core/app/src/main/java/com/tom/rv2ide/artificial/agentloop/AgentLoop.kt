@@ -96,10 +96,11 @@ class AgentLoop(
           )
 
       val response =
-          request(prompt).getOrElse { error ->
-            listener(AgentEvent.Failed(error.message ?: "Could not reach the AI provider."))
-            return
-          }
+          request(prompt) { text, reasoning -> listener(AgentEvent.Thinking(text, reasoning)) }
+              .getOrElse { error ->
+                listener(AgentEvent.Failed(error.message ?: "Could not reach the AI provider."))
+                return
+              }
 
       var action = AgentProtocol.parse(response)
       if (action == null) {
@@ -206,16 +207,21 @@ class AgentLoop(
     }
   }
 
-  private suspend fun request(prompt: String): Result<String> =
+  private suspend fun request(
+      prompt: String,
+      onChunk: ((text: String, reasoning: Boolean) -> Unit)? = null,
+  ): Result<String> =
       withContext(Dispatchers.IO) {
         try {
           // Keep each request independent: the agent sends its own compact history, and the
           // providers' conversation history would otherwise grow with every step.
           agent.clearConversation()
-          agent.chat(
-              messages = listOf(AgentMessage(AgentMessage.ROLE_USER, prompt)),
-              injectFiles = false,
-          )
+          val messages = listOf(AgentMessage(AgentMessage.ROLE_USER, prompt))
+          if (onChunk == null) {
+            agent.chat(messages = messages, injectFiles = false)
+          } else {
+            agent.chatStream(messages = messages, onChunk = onChunk)
+          }
         } catch (e: kotlinx.coroutines.CancellationException) {
           throw e
         } catch (e: Exception) {

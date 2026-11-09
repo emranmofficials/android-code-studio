@@ -54,6 +54,8 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
 
   @Volatile private var nextId = 0L
 
+  @Volatile private var lastThinkingAt = 0L
+
   fun start(prompt: String) {
     if (_running.value == true) {
       _status.postValue(str(R.string.agent_running_wait))
@@ -192,6 +194,22 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
         }
       }
 
+      is AgentEvent.Thinking -> {
+        // Streaming arrives in tiny pieces; updating the status bar for each of them would make
+        // the UI flicker, so at most one update every 150 ms is applied.
+        val now = System.currentTimeMillis()
+        if (now - lastThinkingAt < THINKING_THROTTLE_MS) return
+        lastThinkingAt = now
+        if (event.reasoning) {
+          val tail = event.text.trim().takeLast(THINKING_TAIL)
+          if (tail.isNotBlank()) {
+            _status.postValue(str(R.string.agent_status_thinking, tail))
+          }
+        } else {
+          _status.postValue(str(R.string.agent_status_writing))
+        }
+      }
+
       is AgentEvent.StepResult -> {
         mutate { list ->
           val index =
@@ -308,4 +326,9 @@ class AgentViewModel(application: Application) : AndroidViewModel(application) {
       } catch (e: Exception) {
         null
       }
+
+  private companion object {
+    const val THINKING_THROTTLE_MS = 150L
+    const val THINKING_TAIL = 160
+  }
 }

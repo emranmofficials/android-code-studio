@@ -27,16 +27,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import com.tom.rv2ide.artificial.agents.Agents
-import org.json.JSONObject
-import org.json.JSONArray
-import java.net.HttpURLConnection
-import java.net.URL
 import com.tom.rv2ide.artificial.exceptions.*
 import com.tom.rv2ide.artificial.agents.AIAgent
 import com.tom.rv2ide.artificial.agents.AIAgentRegistry
 import com.tom.rv2ide.artificial.agentloop.AgentMessage
 import com.tom.rv2ide.artificial.secrets.ApiKey
 import com.tom.rv2ide.artificial.agents.ModificationAttempt
+import com.tom.rv2ide.artificial.openaiagent.OpenAIAgentSettings
+import com.tom.rv2ide.artificial.openaiagent.OpenAIClient
 
 /*
  * @author Mohammed-baqer-null @ https://github.com/Mohammed-baqer-null
@@ -54,6 +52,7 @@ class OpenAI : AIAgent {
   private val maxRetryAttempts = 3
   private var agents: Agents? = null
   private var selectedModel: String = "gpt-4o"
+  private val client = OpenAIClient()
   override val providerId = "openai"
   override val providerName = "OpenAI"
 
@@ -65,9 +64,14 @@ class OpenAI : AIAgent {
               }
               
               override fun hasValidApiKey(): Boolean {
+                  // A custom OpenAI-compatible endpoint may run without a key at all, so the
+                  // connection settings decide; otherwise the stored key must look usable.
+                  val config =
+                      OpenAIAgentSettings.config(fallbackApiKey = ApiKey.getOpenAIApiKey())
+                  if (config.canRequest) return true
                   val key = ApiKey.getOpenAIApiKey()
-                  android.util.Log.d("OpenAI", "hasValidApiKey check: ${key != null && key.isNotEmpty()}, key length: ${key?.length ?: 0}")
-                  return key != null && key.isNotEmpty()
+                  android.util.Log.d("OpenAI", "hasValidApiKey check: ${key.isNotEmpty()}, key length: ${key.length}")
+                  return key.isNotEmpty()
               }
               
               override fun getApiKey(): String? {
@@ -83,16 +87,11 @@ class OpenAI : AIAgent {
       try {
           this.apiKey = apiKey
           agents = Agents(context)
-          var selectedModel = agents?.getAgent() ?: "gpt-4o"
-          
-          // Ensure we're using a valid OpenAI model
-          if (!agents!!.isValidModelForProvider(selectedModel, "openai")) {
-              selectedModel = "gpt-4o"
-              agents?.setAgent(selectedModel)
-              agents?.setProvider("openai")
-          }
-          
-          this.selectedModel = selectedModel
+
+          // The model picked in the AI settings (or in the OpenAI agent settings sheet) is used
+          // as-is, so custom / OpenAI-compatible model ids are not replaced by a hardcoded one.
+          val configuredModel = agents?.getAgent()?.takeIf { it.isNotBlank() }
+          this.selectedModel = configuredModel ?: OpenAIAgentSettings.DEFAULT_MODEL
       } catch (e: Exception) {
           throw e
       }
@@ -121,6 +120,44 @@ class OpenAI : AIAgent {
                 "${message.role.uppercase()}: ${message.content}"
               }
           val response = callOpenAIAPI(key, prompt, systemPrompt = null)
+          if (response.isBlank()) {
+            Result.failure(Exception("Empty response from AI"))
+          } else {
+            Result.success(response)
+          }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Result.failure(e)
+        }
+      }
+
+  /**
+   * Streamed variant used by the agent loop: the model's answer is streamed so the Agent tab can
+   * show "thinking" text while it works. Falls back to the non streaming call on endpoints which
+   * do not support server sent events.
+   */
+  override suspend fun chatStream(
+      messages: List<AgentMessage>,
+      onChunk: (text: String, reasoning: Boolean) -> Unit,
+  ): Result<String> =
+      withContext(Dispatchers.IO) {
+        val key =
+            apiKey
+                ?: return@withContext Result.failure(
+                    IllegalStateException("OpenAI service not initialized"))
+        try {
+          val prompt =
+              messages.joinToString(separator = "\n\n") { message ->
+                "${message.role.uppercase()}: ${message.content}"
+              }
+          val response =
+              callOpenAIAPI(
+                  apiKey = key,
+                  prompt = prompt,
+                  systemPrompt = null,
+                  onChunk = onChunk,
+              )
           if (response.isBlank()) {
             Result.failure(Exception("Empty response from AI"))
           } else {
@@ -299,125 +336,32 @@ class OpenAI : AIAgent {
         }
       }
 
+  /**
+   * Sends one chat completion through [OpenAIClient]. The base URL, API key, streaming flag and
+   * token limit come from [OpenAIAgentSettings], so the same provider also works with any
+   * OpenAI-compatible endpoint (Ollama, LM Studio, OpenRouter, ...).
+   */
   private fun callOpenAIAPI(
       apiKey: String,
       prompt: String,
       systemPrompt: String? = writingRules.useThis(),
+      onChunk: ((text: String, reasoning: Boolean) -> Unit)? = null,
   ): String {
-    android.util.Log.d("OpenAI", "Starting API call to OpenAI")
-    
-    val url = URL("https://api.openai.com/v1/chat/completions")
-    val connection = url.openConnection() as HttpURLConnection
-    
-    try {
-      connection.requestMethod = "POST"
-      connection.setRequestProperty("Content-Type", "application/json")
-      connection.setRequestProperty("Authorization", "Bearer $apiKey")
-      connection.doOutput = true
-      connection.connectTimeout = 30000
-      connection.readTimeout = 30000
-      
-      val messages = JSONArray()
+    val config =
+        OpenAIAgentSettings.config(fallbackApiKey = apiKey).copy(model = selectedModel)
 
-      if (systemPrompt != null) {
-        val systemMessage = JSONObject()
-        systemMessage.put("role", "system")
-        systemMessage.put("content", systemPrompt)
-        messages.put(systemMessage)
-      }
-      
-      val userMessage = JSONObject()
-      userMessage.put("role", "user")
-      userMessage.put("content", prompt)
-      messages.put(userMessage)
-      
-      val requestBody = JSONObject()
-      requestBody.put("model", selectedModel)
-      requestBody.put("messages", messages)
-      requestBody.put("temperature", 0.7)
-      requestBody.put("max_tokens", 4096)
-      
-      android.util.Log.d("OpenAI", "Request body: ${requestBody.toString()}")
-      
-      connection.outputStream.use { os ->
-        os.write(requestBody.toString().toByteArray())
-      }
-      
-      val responseCode = connection.responseCode
-      android.util.Log.d("OpenAI", "Response code: $responseCode")
-      
-      if (responseCode != HttpURLConnection.HTTP_OK) {
-        val errorStream = connection.errorStream?.bufferedReader()?.readText() ?: "Unknown error"
-        android.util.Log.e("OpenAI", "Error response: $errorStream")
-        
-        // Parse error response
-        try {
-          val errorJson = JSONObject(errorStream)
-          val errorObj = errorJson.optJSONObject("error")
-          val errorMessage = errorObj?.optString("message") ?: errorStream
-          val errorType = errorObj?.optString("type") ?: ""
-          val errorCode = errorObj?.optString("code") ?: ""
-          
-          android.util.Log.e("OpenAI", "Error type: $errorType, code: $errorCode, message: $errorMessage")
-          
-          // Identify specific error types
-          when {
-            responseCode == 429 || errorType.contains("rate_limit") || errorCode.contains("rate_limit") -> 
-              throw com.tom.rv2ide.artificial.exceptions.RateLimitException("OpenAI rate limit exceeded: $errorMessage")
-            errorType.contains("insufficient_quota") || errorMessage.contains("quota") || errorMessage.contains("billing") -> 
-              throw com.tom.rv2ide.artificial.exceptions.QuotaExceededException("OpenAI quota exceeded: $errorMessage")
-            errorType.contains("invalid_api_key") || errorCode.contains("invalid_api_key") -> 
-              throw com.tom.rv2ide.artificial.exceptions.InvalidApiKeyException("Invalid OpenAI API key: $errorMessage")
-            responseCode == 401 -> 
-              throw com.tom.rv2ide.artificial.exceptions.InvalidApiKeyException("OpenAI authentication failed: $errorMessage")
-            else -> 
-              throw Exception("OpenAI API error ($responseCode) - Type: $errorType, Code: $errorCode, Message: $errorMessage")
-          }
-        } catch (e: com.tom.rv2ide.artificial.exceptions.RateLimitException) {
-          throw e
-        } catch (e: com.tom.rv2ide.artificial.exceptions.QuotaExceededException) {
-          throw e
-        } catch (e: com.tom.rv2ide.artificial.exceptions.InvalidApiKeyException) {
-          throw e
-        } catch (e: Exception) {
-          throw Exception("OpenAI API error ($responseCode): $errorStream")
-        }
-      }
-      
-      val responseBody = connection.inputStream.bufferedReader().readText()
-      android.util.Log.d("OpenAI", "Success response received, length: ${responseBody.length}")
-      
-      val jsonResponse = JSONObject(responseBody)
-      
-      val choices = jsonResponse.getJSONArray("choices")
-      if (choices.length() > 0) {
-        val firstChoice = choices.getJSONObject(0)
-        val message = firstChoice.getJSONObject("message")
-        return message.getString("content")
-      }
-      
-      throw Exception("No response from OpenAI API")
-    } catch (e: com.tom.rv2ide.artificial.exceptions.RateLimitException) {
-      android.util.Log.e("OpenAI", "Rate limit exception", e)
-      throw e
-    } catch (e: com.tom.rv2ide.artificial.exceptions.QuotaExceededException) {
-      android.util.Log.e("OpenAI", "Quota exceeded exception", e)
-      throw e
-    } catch (e: com.tom.rv2ide.artificial.exceptions.InvalidApiKeyException) {
-      android.util.Log.e("OpenAI", "Invalid API key exception", e)
-      throw e
-    } catch (e: java.net.SocketTimeoutException) {
-      android.util.Log.e("OpenAI", "Timeout exception", e)
-      throw Exception("OpenAI request timeout: ${e.message}")
-    } catch (e: java.net.UnknownHostException) {
-      android.util.Log.e("OpenAI", "Network exception", e)
-      throw Exception("Network error - cannot reach OpenAI: ${e.message}")
-    } catch (e: Exception) {
-      android.util.Log.e("OpenAI", "General exception", e)
-      throw e
-    } finally {
-      connection.disconnect()
+    val messages = buildList {
+      if (systemPrompt != null) add(AgentMessage("system", systemPrompt))
+      add(AgentMessage(AgentMessage.ROLE_USER, prompt))
     }
+
+    return client.chat(
+        config = config,
+        messages = messages,
+        onChunk = onChunk?.let { callback ->
+          { chunk: OpenAIClient.ChatChunk -> callback(chunk.text, chunk.reasoning) }
+        },
+    )
   }
 
   private fun readRelevantFiles(): Map<String, String> {

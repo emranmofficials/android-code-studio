@@ -29,6 +29,12 @@ sealed interface AgentEvent {
   /** A tool is about to be executed. [args] is a short, human readable preview. */
   data class StepStart(val step: Int, val tool: String, val args: String) : AgentEvent
 
+  /**
+   * A piece of text streamed by the provider while it is writing the next action. [reasoning] is
+   * true for the model's "thinking" text, false for the answer itself.
+   */
+  data class Thinking(val text: String, val reasoning: Boolean) : AgentEvent
+
   /** A tool finished. [output] is truncated before it is emitted. */
   data class StepResult(
       val step: Int,

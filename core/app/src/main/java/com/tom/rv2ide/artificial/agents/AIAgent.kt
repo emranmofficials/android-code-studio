@@ -62,6 +62,18 @@ interface AIAgent {
           }
       return generateCode(prompt = prompt, context = null, language = "text", projectStructure = null)
     }
+
+    /**
+     * Same as [chat], but providers which support server sent events may call [onChunk] while the
+     * answer is being generated. The final text is returned once the answer is complete.
+     *
+     * [onChunk] receives the text and whether it is "thinking" (reasoning) text rather than part
+     * of the answer. The default implementation emits nothing and simply falls back to [chat].
+     */
+    suspend fun chatStream(
+        messages: List<AgentMessage>,
+        onChunk: (text: String, reasoning: Boolean) -> Unit,
+    ): Result<String> = chat(messages = messages, injectFiles = false)
     
     fun recordModification(filePath: String, oldContent: String?, newContent: String, success: Boolean)
     fun undoLastModification(): Boolean
