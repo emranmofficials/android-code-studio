@@ -86,6 +86,33 @@
   <!-- AI Agent grok -->
   <string name="ai_agent_grok_api_key">Grok API Key</string>
 
+  <!-- AI Agent build & fix loop -->
+  <string name="agent_tab_title">Agent</string>
+  <string name="agent_input_hint">What should I build or fix?</string>
+  <string name="agent_btn_send">Send</string>
+  <string name="agent_btn_clear">Clear</string>
+  <string name="agent_btn_stop">Stop</string>
+  <string name="agent_btn_undo">Undo</string>
+  <string name="agent_status_idle">Describe a task. The agent edits the code, builds the project and fixes errors.</string>
+  <string name="agent_status_planning">Planning…</string>
+  <string name="agent_status_running">Running…</string>
+  <string name="agent_status_done">Done</string>
+  <string name="agent_status_failed">Failed</string>
+  <string name="agent_status_stuck">Stuck on the same error</string>
+  <string name="agent_status_cancelled">Cancelled</string>
+  <string name="agent_step_plan">Plan</string>
+  <string name="agent_step_running">Running…</string>
+  <string name="agent_step_done">Done</string>
+  <string name="agent_step_failed">Failed</string>
+  <string name="agent_max_steps">Reached the maximum number of steps</string>
+  <string name="agent_files_changed">Files changed: %1$s</string>
+  <string name="agent_undo_done">Restored %1$d file(s). Reopen edited files to see the changes.</string>
+  <string name="agent_undo_none">Nothing to undo</string>
+  <string name="agent_no_project">Open a project first</string>
+  <string name="agent_no_provider">Configure an AI provider API key in the AI settings first</string>
+  <string name="agent_running_wait">Please wait for the current agent run to finish</string>
+  <string name="agent_diff_title">%1$s changed</string>
+
   <string name="no_acs_title">ACS Components Missing</string>
   <string name="no_acs_summary">This application appears to be incomplete or unofficial, as it is missing the required ACS build system. For full functionality, please install the official AI Dev Studio from a trusted source.</string>
 
